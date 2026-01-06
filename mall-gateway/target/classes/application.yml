@@ -1,0 +1,45 @@
+server:
+  port: 9000 # 网关端口（前端统一调用这个端口）
+
+spring:
+  application:
+    name: mall-gateway # 网关服务名
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848 # Nacos地址
+    gateway:
+      # 路由规则：将请求转发到对应微服务
+      routes:
+        # 商品服务路由：/api/product/** → 转发到mall-product-service
+        - id: product-service-route
+          uri: lb://mall-product-service # lb=负载均衡，后面跟服务名（Nacos注册的名称）
+          predicates:
+            - Path=/api/product/** # 前端请求路径前缀
+          filters:
+            - StripPrefix=1 # 去除路径前缀（/api/product/list → /product/list）
+
+        # 用户服务路由：/api/user/** → 转发到mall-user-service
+        - id: user-service-route
+          uri: lb://mall-user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=1
+
+        # 购物车服务路由：/api/cart/** → 转发到mall-cart-service
+        - id: cart-service-route
+          uri: lb://mall-user-service
+          predicates:
+            - Path=/api/cart/**
+          filters:
+            - StripPrefix=1
+
+      # 跨域配置（前后端分离必备）
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "http://127.0.0.1:8803" # 前端地址（后面前端端口用8080）
+            allowed-methods: "*" # 允许所有请求方法
+            allowed-headers: "*" # 允许所有请求头
+            allow-credentials: true # 允许携带Cookie
