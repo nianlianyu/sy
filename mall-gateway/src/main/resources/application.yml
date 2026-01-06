@@ -1,0 +1,35 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: mall-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+    gateway:
+      routes:
+        # 商品服务路由
+        - id: product-service-route
+          uri: lb://mall-product-service
+          predicates:
+            - Path=/api/product/**
+          filters:
+            - StripPrefix=1
+
+        # 用户服务路由
+        - id: user-service-route
+          uri: lb://mall-user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=1
+
+        # 购物车服务路由
+        - id: cart-service-route
+          uri: lb://mall-user-service
+          predicates:
+            - Path=/api/cart/**
+          filters:
+            - StripPrefix=1
